@@ -158,48 +158,50 @@ void SnakeGame::SpawnFood()
 
 void SnakeGame::UpdateMovingBlock()
 {
-    obstacle.moveTimer += 0.016f;  // Approximately 60 FPS
+    obstacle.moveTimer += 0.032f;  // Approximately 60 FPS
 
     if (obstacle.moveTimer >= obstacleDelay)
     {
         obstacle.moveTimer = 0.0f;
 
-        // Move obstacle in its current direction
+        // Randomly choose a new direction for the obstacle
+        int randomDir = rand() % 4;
+        obstacle.direction = static_cast<Direction>(randomDir);
+
+        // Move obstacle in the chosen direction
+        int newX = obstacle.x;
+        int newY = obstacle.y;
+
         switch (obstacle.direction)
         {
         case Direction::UP:
-            obstacle.y--;
-            if (obstacle.y < 0)
-            {
-                obstacle.y = 0;
-                obstacle.direction = Direction::DOWN;
-            }
+            newY--;
             break;
         case Direction::DOWN:
-            obstacle.y++;
-            if (obstacle.y >= gridHeight)
-            {
-                obstacle.y = gridHeight - 1;
-                obstacle.direction = Direction::UP;
-            }
+            newY++;
             break;
         case Direction::LEFT:
-            obstacle.x--;
-            if (obstacle.x < 0)
-            {
-                obstacle.x = 0;
-                obstacle.direction = Direction::RIGHT;
-            }
+            newX--;
             break;
         case Direction::RIGHT:
-            obstacle.x++;
-            if (obstacle.x >= gridWidth)
-            {
-                obstacle.x = gridWidth - 1;
-                obstacle.direction = Direction::LEFT;
-            }
+            newX++;
             break;
         }
+
+        // Keep obstacle within grid boundaries (wrap around or bounce)
+        if (newX < 0)
+            newX = gridWidth - 1;  // Wrap to right side
+        else if (newX >= gridWidth)
+            newX = 0;  // Wrap to left side
+
+        if (newY < 0)
+            newY = gridHeight - 1;  // Wrap to bottom
+        else if (newY >= gridHeight)
+            newY = 0;  // Wrap to top
+
+        // Update obstacle position
+        obstacle.x = newX;
+        obstacle.y = newY;
     }
 }
 
@@ -240,11 +242,14 @@ void SnakeGame::CheckCollisions()
         return;
     }
 
-    // Obstacle collision - game over when hitting moving obstacle
-    if (head.x == obstacle.x && head.y == obstacle.y)
+    // Obstacle collision - game over when hitting moving obstacle (check ALL snake segments)
+    for (size_t i = 0; i < snake.size(); ++i)
     {
-        gameOver = true;
-        return;
+        if (snake[i].x == obstacle.x && snake[i].y == obstacle.y)
+        {
+            gameOver = true;
+            return;
+        }
     }
 
     // Self collision - game over when hitting own body
