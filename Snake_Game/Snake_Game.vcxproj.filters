@@ -45,4 +45,10 @@
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include=".gitignore" />
+    <None Include="README.md" />
+    <None Include="IMGUI_MODIFICATIONS.md" />
+    <None Include="ini SnakeGameInstaller.iss" />
+  </ItemGroup>
 </Project>
