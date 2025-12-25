@@ -1,4 +1,4 @@
-; Inno Setup Script for Snake Game
+; Inno Setup Script for Snake Game with Icon
 
 [Setup]
 AppName=Snake Game
@@ -11,9 +11,11 @@ OutputDir=Installer
 OutputBaseFilename=SnakeGame-Setup
 Compression=lzma
 SolidCompression=yes
-PrivilegesRequired=lowest
+PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64
 ArchitecturesAllowed=x64
+WizardStyle=modern
+SetupIconFile=game_icon.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -24,11 +26,13 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; Main executable
 Source: "x64\Release\Snake_Game.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Game icon
+Source: "game_icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Snake Game"; Filename: "{app}\Snake_Game.exe"
+Name: "{group}\Snake Game"; Filename: "{app}\Snake_Game.exe"; IconFilename: "{app}\game_icon.ico"
 Name: "{group}\{cm:UninstallProgram,Snake Game}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\Snake Game"; Filename: "{app}\Snake_Game.exe"; Tasks: desktopicon
+Name: "{userdesktop}\Snake Game"; Filename: "{app}\Snake_Game.exe"; IconFilename: "{app}\game_icon.ico"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\Snake_Game.exe"; Description: "{cm:LaunchProgram,Snake Game}"; Flags: nowait postinstall skipifsilent
