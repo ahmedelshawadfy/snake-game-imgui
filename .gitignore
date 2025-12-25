@@ -1,0 +1,25 @@
+# Visual Studio
+.vs/
+bin/
+Debug/
+Release/
+*.vcxproj.user
+*.sln.DotSettings
+
+# Build artifacts
+*.obj
+*.exe
+*.lib
+*.ilk
+*.pdb
+
+# ImGui
+external/imgui/ImGui.ini
+
+# IDE
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
