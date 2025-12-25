@@ -1,4 +1,5 @@
-// Dear ImGui: Snake Game - DirectX 9
+﻿// Dear ImGui: Snake Game - DirectX 9
+// Enhanced UI Design Version - AUTO START
 
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
@@ -16,13 +17,42 @@ static D3DPRESENT_PARAMETERS g_d3dpp = {};
 static SnakeGame* g_game = nullptr;
 static int g_gameSpeed = 2;
 static bool g_showHelp = false;
-static bool g_showGameWindow = false;  // Control visibility of game pop-up
+static bool g_showGameWindow = true;  // Always show game window
 static int g_highScore = 0;
 
 bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
 void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+void SetupImGuiStyle()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImGuiIO& io = ImGui::GetIO();
+    
+    // Colors
+    ImVec4* colors = style.Colors;
+    colors[ImGuiCol_WindowBg]      = ImVec4(0.06f, 0.06f, 0.11f, 0.94f);
+    colors[ImGuiCol_TitleBg]       = ImVec4(0.00f, 0.70f, 0.00f, 0.80f);
+    colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 1.00f, 0.00f, 0.90f);
+    colors[ImGuiCol_Button]        = ImVec4(0.00f, 0.60f, 0.00f, 0.80f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.00f, 0.80f, 0.00f, 1.00f);
+    colors[ImGuiCol_ButtonActive]  = ImVec4(0.00f, 1.00f, 0.00f, 1.00f);
+    colors[ImGuiCol_Text]          = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+    colors[ImGuiCol_TextDisabled]  = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+    colors[ImGuiCol_FrameBg]       = ImVec4(0.10f, 0.10f, 0.15f, 0.80f);
+    colors[ImGuiCol_FrameBgHovered]= ImVec4(0.15f, 0.15f, 0.20f, 0.90f);
+    colors[ImGuiCol_Border]        = ImVec4(0.00f, 0.70f, 0.00f, 0.50f);
+    
+    // Sizing
+    style.WindowPadding = ImVec2(20, 20);
+    style.WindowRounding = 5.0f;
+    style.FramePadding = ImVec2(10, 8);
+    style.FrameRounding = 3.0f;
+    style.ItemSpacing = ImVec2(10, 10);
+    style.ItemInnerSpacing = ImVec2(8, 6);
+    style.ButtonTextAlign = ImVec2(0.5f, 0.5f);
+}
 
 int main(int, char**)
 {
@@ -45,6 +75,7 @@ int main(int, char**)
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
+    SetupImGuiStyle();
     ImGui::StyleColorsDark();
 
     ImGui_ImplWin32_Init(hwnd);
@@ -87,7 +118,7 @@ int main(int, char**)
 
         ImGuiIO& io = ImGui::GetIO();
 
-        // Process game controls - always process these keys for the game
+        // Process game controls
         if (ImGui::IsKeyPressed(ImGuiKey_UpArrow) || ImGui::IsKeyPressed(ImGuiKey_W))
             g_game->SetDirection(Direction::UP);
         if (ImGui::IsKeyPressed(ImGuiKey_DownArrow) || ImGui::IsKeyPressed(ImGuiKey_S))
@@ -108,43 +139,75 @@ int main(int, char**)
         if (g_game->GetScore() > g_highScore)
             g_highScore = g_game->GetScore();
 
-        ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::SetNextWindowSize(io.DisplaySize);
-        ImGui::Begin("##MainWindow", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration);
+        // Control Panel - Left Side
+        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(280, 760), ImGuiCond_FirstUseEver);
+        ImGui::Begin("Control Panel", nullptr, ImGuiWindowFlags_NoMove);
 
-        ImGui::Text("SNAKE GAME");
+        // Title
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "SNAKE GAME");
         ImGui::Separator();
 
-        ImGui::Text("SCORE: %d", g_game->GetScore());
-        ImGui::Text("HIGH SCORE: %d", g_highScore);
-        ImGui::Text("STATE: %s", g_game->IsGameOver() ? "GAME OVER" : (g_game->IsGamePaused() ? "PAUSED" : "PLAYING"));
-        ImGui::Separator();
+        // Score Display
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "SCORE");
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "%d", g_game->GetScore());
+        
+        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "HIGH SCORE");
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "%d", g_highScore);
 
+        // Game State
+        ImGui::Separator();
+        ImGui::Text("STATE");
+        if (g_game->IsWaitingForStart())
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "[WAITING FOR INPUT]");
+        }
+        else if (g_game->IsGameOver())
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "[GAME OVER]");
+        }
+        else if (g_game->IsGamePaused())
+        {
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "[PAUSED]");
+        }
+        else
+        {
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "[PLAYING]");
+        }
+
+        // Speed Control
+        ImGui::Separator();
+        ImGui::Text("SPEED");
         ImGui::RadioButton("Slow", &g_gameSpeed, 1);
-        ImGui::SameLine();
         ImGui::RadioButton("Normal", &g_gameSpeed, 2);
-        ImGui::SameLine();
         ImGui::RadioButton("Fast", &g_gameSpeed, 3);
 
         ImGui::Separator();
 
-        if (ImGui::Button("NEW GAME", ImVec2(-1, 40)))
+        // Reset Button (replaces NEW GAME)
+        if (ImGui::Button("[RESET GAME]", ImVec2(-1, 50)))
         {
             g_game->Reset();
-            g_showGameWindow = true;  // Show the pop-up game window
         }
 
-        if (ImGui::Button("HELP", ImVec2(-1, 40)))
+        if (ImGui::Button("[HELP]", ImVec2(-1, 50)))
             g_showHelp = !g_showHelp;
+
+        ImGui::Separator();
+        ImGui::TextDisabled("Controls:");
+        ImGui::TextDisabled("Arrows/WASD");
+        ImGui::TextDisabled("SPACE: Pause");
+        ImGui::TextDisabled("R: Reset");
 
         ImGui::End();
 
-        // Pop-up Game Window
-        if (g_showGameWindow)
+        // Game Window - Always visible
         {
-            ImGui::SetNextWindowPos(ImVec2(100, 50), ImGuiCond_Always);  // Changed from FirstUseEver to Always
-            ImGui::SetNextWindowSize(ImVec2(500, 550), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Game", &g_showGameWindow);
+            ImGui::SetNextWindowPos(ImVec2(310, 10), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(550, 500), ImGuiCond_FirstUseEver);
+            ImGui::Begin("SNAKE GAME - Play Area", nullptr);
 
             ImDrawList* drawList = ImGui::GetWindowDrawList();
             ImVec2 canvasPos = ImGui::GetCursorScreenPos();
@@ -158,27 +221,48 @@ int main(int, char**)
             ImGui::Text("SCORE: %d", g_game->GetScore());
             ImGui::Text("HIGH SCORE: %d", g_highScore);
             
-            // Display different states
             if (g_game->IsWaitingForStart())
             {
-                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "STATE: PRESS ARROW TO START");
+                ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "[PRESS ARROW TO START]");
             }
             else
             {
-                ImGui::Text("STATE: %s", g_game->IsGameOver() ? "GAME OVER" : (g_game->IsGamePaused() ? "PAUSED" : "PLAYING"));
+                ImGui::Text("STATE: %s", g_game->IsGameOver() ? "[GAME OVER]" : (g_game->IsGamePaused() ? "[PAUSED]" : "[PLAYING]"));
             }
 
             ImGui::End();
         }
 
+        // Help Window
         if (g_showHelp)
         {
-            ImGui::SetNextWindowPos(ImVec2(500, 100), ImGuiCond_FirstUseEver);
-            ImGui::SetNextWindowSize(ImVec2(400, 350), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Help", &g_showHelp);
-            ImGui::Text("HOW TO PLAY");
+            ImGui::SetNextWindowPos(ImVec2(310, 520), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(550, 250), ImGuiCond_FirstUseEver);
+            ImGui::Begin("HELP", &g_showHelp);
+            
+            ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "HOW TO PLAY");
             ImGui::Separator();
-            ImGui::TextWrapped("Guide the snake to eat food and grow longer.\n\nAvoid walls and your own body!\n\nCONTROLS:\nArrow Keys / WASD - Move\nSpace - Pause/Resume\nR - Reset Game\n\nEach food eaten = 10 points");
+            ImGui::TextWrapped(
+                "OBJECTIVE:\n"
+                "Guide your snake to eat the red food and grow longer!\n\n"
+                "RULES:\n"
+                "- Avoid hitting walls\n"
+                "- Avoid the moving ORANGE obstacle block\n"
+                "- Don't collide with your own body\n"
+                "- Each food = 10 points\n\n"
+                "GAME ELEMENTS:\n"
+                "GREEN: Your Snake\n"
+                "RED: Food pellets (+10 points)\n"
+                "ORANGE: Moving obstacle (causes game over)\n\n"
+                "CONTROLS:\n"
+                "UP/DOWN/LEFT/RIGHT : Move Snake\n"
+                "WASD               : Alternative Movement\n"
+                "SPACE              : Pause/Resume Game\n"
+                "R                  : Reset Game\n\n"
+                "STRATEGY TIP:\n"
+                "Plan your movements carefully to avoid the moving obstacle!\n"
+                "Adjust speed to match your reflexes."
+            );
             ImGui::End();
         }
 

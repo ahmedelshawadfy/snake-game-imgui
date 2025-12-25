@@ -6,7 +6,7 @@
 SnakeGame::SnakeGame(int gridWidth, int gridHeight)
     : gridWidth(gridWidth), gridHeight(gridHeight), score(0),
     gameOver(false), paused(false), waitingForStart(true), moveTimer(0.0f), moveDelay(0.1f),
-    currentDir(Direction::RIGHT), nextDir(Direction::RIGHT)
+    currentDir(Direction::RIGHT), nextDir(Direction::RIGHT), obstacleDelay(0.3f)
 {
     srand(static_cast<unsigned>(time(0)));
 
@@ -14,6 +14,12 @@ SnakeGame::SnakeGame(int gridWidth, int gridHeight)
     snake.push_back({ gridWidth / 2, gridHeight / 2 });
     snake.push_back({ gridWidth / 2 - 1, gridHeight / 2 });
     snake.push_back({ gridWidth / 2 - 2, gridHeight / 2 });
+
+    // Initialize moving obstacle
+    obstacle.x = 5;
+    obstacle.y = 5;
+    obstacle.direction = Direction::RIGHT;
+    obstacle.moveTimer = 0.0f;
 
     SpawnFood();
 }
@@ -30,12 +36,16 @@ void SnakeGame::Update(float deltaTime)
         MoveSnake();
         CheckCollisions();
     }
+
+    // Update obstacle movement
+    UpdateMovingBlock();
 }
 
 void SnakeGame::Render(ImDrawList* drawList, ImVec2 canvasPos, float cellSize)
 {
     ImU32 snakeColor = ImGui::GetColorU32(ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
     ImU32 foodColor = ImGui::GetColorU32(ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+    ImU32 obstacleColor = ImGui::GetColorU32(ImVec4(1.0f, 0.5f, 0.0f, 1.0f));  // Orange
     ImU32 gridColor = ImGui::GetColorU32(ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
 
     // Draw grid
@@ -64,6 +74,13 @@ void SnakeGame::Render(ImDrawList* drawList, ImVec2 canvasPos, float cellSize)
     ImVec2 foodMin(canvasPos.x + food.x * cellSize, canvasPos.y + food.y * cellSize);
     ImVec2 foodMax(foodMin.x + cellSize, foodMin.y + cellSize);
     drawList->AddRectFilled(foodMin, foodMax, foodColor);
+
+    // Draw moving obstacle (orange block)
+    ImVec2 obstacleMin(canvasPos.x + obstacle.x * cellSize, canvasPos.y + obstacle.y * cellSize);
+    ImVec2 obstacleMax(obstacleMin.x + cellSize, obstacleMin.y + cellSize);
+    drawList->AddRectFilled(obstacleMin, obstacleMax, obstacleColor);
+    // Add border to obstacle to make it more visible
+    drawList->AddRect(obstacleMin, obstacleMax, ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)), 0.0f, 15, 2.0f);
 }
 
 void SnakeGame::SetDirection(Direction dir)
@@ -102,6 +119,12 @@ void SnakeGame::Reset()
     currentDir = Direction::RIGHT;
     nextDir = Direction::RIGHT;
 
+    // Reset obstacle
+    obstacle.x = 5;
+    obstacle.y = 5;
+    obstacle.direction = Direction::RIGHT;
+    obstacle.moveTimer = 0.0f;
+
     SpawnFood();
 }
 
@@ -126,6 +149,56 @@ void SnakeGame::SpawnFood()
                 validPosition = false;
                 break;
             }
+        }
+        // Also make sure food doesn't spawn on obstacle
+        if (obstacle.x == food.x && obstacle.y == food.y)
+            validPosition = false;
+    }
+}
+
+void SnakeGame::UpdateMovingBlock()
+{
+    obstacle.moveTimer += 0.016f;  // Approximately 60 FPS
+
+    if (obstacle.moveTimer >= obstacleDelay)
+    {
+        obstacle.moveTimer = 0.0f;
+
+        // Move obstacle in its current direction
+        switch (obstacle.direction)
+        {
+        case Direction::UP:
+            obstacle.y--;
+            if (obstacle.y < 0)
+            {
+                obstacle.y = 0;
+                obstacle.direction = Direction::DOWN;
+            }
+            break;
+        case Direction::DOWN:
+            obstacle.y++;
+            if (obstacle.y >= gridHeight)
+            {
+                obstacle.y = gridHeight - 1;
+                obstacle.direction = Direction::UP;
+            }
+            break;
+        case Direction::LEFT:
+            obstacle.x--;
+            if (obstacle.x < 0)
+            {
+                obstacle.x = 0;
+                obstacle.direction = Direction::RIGHT;
+            }
+            break;
+        case Direction::RIGHT:
+            obstacle.x++;
+            if (obstacle.x >= gridWidth)
+            {
+                obstacle.x = gridWidth - 1;
+                obstacle.direction = Direction::LEFT;
+            }
+            break;
         }
     }
 }
@@ -162,6 +235,13 @@ void SnakeGame::CheckCollisions()
 
     // Wall collision - game over when hitting boundaries
     if (head.x < 0 || head.x >= gridWidth || head.y < 0 || head.y >= gridHeight)
+    {
+        gameOver = true;
+        return;
+    }
+
+    // Obstacle collision - game over when hitting moving obstacle
+    if (head.x == obstacle.x && head.y == obstacle.y)
     {
         gameOver = true;
         return;

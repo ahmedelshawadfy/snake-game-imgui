@@ -9,6 +9,12 @@ struct Segment {
     int x, y;
 };
 
+struct MovingBlock {
+    int x, y;
+    Direction direction;
+    float moveTimer;
+};
+
 class SnakeGame
 {
 public:
@@ -30,14 +36,17 @@ public:
 private:
     void SpawnFood();
     void MoveSnake();
+    void UpdateMovingBlock();
     void CheckCollisions();
 
     std::vector<Segment> snake;
     Segment food;
+    MovingBlock obstacle;
     Direction currentDir, nextDir;
     int gridWidth, gridHeight;
     int score;
     bool gameOver, paused;
     bool waitingForStart;  // Flag to wait for first arrow input
     float moveTimer, moveDelay;
+    float obstacleDelay;   // Delay for obstacle movement
 };
