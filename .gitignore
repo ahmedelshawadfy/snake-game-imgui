@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Visual Studio
 .vs/
 bin/
@@ -23,3 +24,46 @@ external/imgui/ImGui.ini
 # OS
 .DS_Store
 Thumbs.db
+=======
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Linker files
+*.ilk
+
+# Debugger Files
+*.pdb
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# debug information files
+*.dwo
+>>>>>>> 7ae9fa3e27a9c803d94b723acaf29e20f39ad954

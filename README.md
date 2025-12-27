@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿# Snake Game - DirectX9 Edition
 
 A classic Snake game built with ImGui and DirectX 9, featuring a modern UI with separate control and game windows.
@@ -42,3 +43,7 @@ Ahmad Elshawadfy
 
 ## License
 MIT License
+=======
+# snake-game-imgui
+2D Snake Game using ImGui and DirectX 9 - Classic implementation
+>>>>>>> 7ae9fa3e27a9c803d94b723acaf29e20f39ad954
