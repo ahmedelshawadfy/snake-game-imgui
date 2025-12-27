@@ -51,5 +51,6 @@
     <None Include="IMGUI_MODIFICATIONS.md" />
     <None Include="ini SnakeGameInstaller.iss" />
     <None Include="python create_game_icon.py" />
+    <None Include="CONTRIBUTING.md" />
   </ItemGroup>
 </Project>

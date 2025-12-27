@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="CONTRIBUTING.md" />
     <None Include="IMGUI_MODIFICATIONS.md" />
     <None Include="ini SnakeGameInstaller.iss" />
     <None Include="python create_game_icon.py" />
